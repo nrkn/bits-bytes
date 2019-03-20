@@ -148,7 +148,7 @@ describe('bits-bytes', () => {
             assert.deepEqual(unpacked, numbers);
         });
         it('can use views to marshal between types', () => {
-            const values = [2306, 11159840];
+            const values = [2306, 11159840, util_1.maxValue(32) - 1];
             const encodeUint32LE = (value) => {
                 const buffer = new ArrayBuffer(4);
                 const view = new DataView(buffer);
@@ -163,7 +163,7 @@ describe('bits-bytes', () => {
             };
             const packData = values.map(value => [32, encodeUint32LE(value)]);
             const packed = __1.pack(packData);
-            const unpacked = __1.unpack(packed, [32, 32]);
+            const unpacked = __1.unpack(packed, [32, 32, 32]);
             const result = unpacked.map(decodeUint32LE);
             assert.deepEqual(result, values);
         });

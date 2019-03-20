@@ -218,7 +218,7 @@ describe( 'bits-bytes', () => {
     } )
 
     it( 'can use views to marshal between types', () => {
-      const values = [ 2306, 11159840 ]
+      const values = [ 2306, 11159840, maxValue( 32 ) - 1 ]
 
       const encodeUint32LE = ( value: number ) => {
         const buffer = new ArrayBuffer( 4 )
@@ -243,7 +243,7 @@ describe( 'bits-bytes', () => {
       )
 
       const packed = pack( packData )
-      const unpacked = unpack( packed, [ 32, 32 ] )
+      const unpacked = unpack( packed, [ 32, 32, 32 ] )
 
       const result = unpacked.map( decodeUint32LE )
 
