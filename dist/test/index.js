@@ -62,10 +62,6 @@ describe('bits-bytes', () => {
             const unpacked = __1.unpack(packedBytes, packDataLengths);
             assert.deepEqual(unpacked, packDataValues);
         });
-        // it( 'unpack2', () => {
-        //   const unpacked = unpack2( packedBytes, packDataLengths )
-        //   assert.deepEqual( unpacked, packDataValues )
-        // } )
         it('unpacks with a bit offset', () => {
             const unpacked = __1.unpack(offsetBytes, packDataLengths, bitOffset);
             assert.deepEqual(unpacked, packDataValues);
