@@ -1,0 +1,33 @@
+{
+  "name": "bits-bytes",
+  "version": "0.1.0",
+  "description": "Pack and unpack unsigned integers of arbitrary bit length to and from byte arrays",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && mocha ./dist/test",
+    "coverage": "npm run build && nyc --reporter=html --reporter=text mocha ./dist/test"
+  },
+  "nyc": {
+    "exclude": [
+      "./dist/test"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nrkn/bits-bytes.git"
+  },
+  "keywords": [],
+  "author": "Nik Coughlin <nrkn.com@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nrkn/bits-bytes/issues"
+  },
+  "homepage": "https://github.com/nrkn/bits-bytes#readme",
+  "devDependencies": {
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.12",
+    "mocha": "^5.2.0"
+  }
+}
