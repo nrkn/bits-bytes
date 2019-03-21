@@ -1,63 +1,88 @@
-import { LengthValuePair, ValueStrategy } from './types'
-import { countBytes, modStrategy, getBit } from './util'
+import { ValueStrategy, LengthValuePair } from './types'
+import { modStrategy } from './util'
 
-// adapted from http://number-none.com/product/Packing%20Integers/index.html
-export const pack = (
-  pairs: LengthValuePair[],
-  bitOffset = 0,
-  bytes: Uint8Array = new Uint8Array( countBytes( pairs ) ),
-  valueStrategy: ValueStrategy = modStrategy
+export const getByteBit = ( byte: number, bitOffset: number ) =>
+  byte >> ( 8 - ( bitOffset + 1 ) ) & 1
+
+export const setByteBit = ( byte: number, bitOffset: number, bit: any ) => 
+  bit ?
+  byte |= 1 << ( 7 - bitOffset ) :
+  byte &= ~( 1 << ( 7 - bitOffset ) )
+
+export const getBit = ( bytes: Uint8Array | number, bitOffset: number ) => {
+  const byteOffset = Math.floor( bitOffset / 8 )
+  const byteBitOffset = bitOffset % 8
+
+  return getByteBit( bytes[ byteOffset ], byteBitOffset )
+}
+
+export const setBit = ( bytes: Uint8Array, bitOffset: number, bit: any ) => {
+  const byteOffset = Math.floor( bitOffset / 8 )
+  const byteBitOffset = bitOffset % 8
+
+  bytes[ byteOffset ] = setByteBit( bytes[ byteOffset ], byteBitOffset, bit )
+}
+
+export const getUint = ( 
+  bytes: Uint8Array, bitLength: number, bitOffset = 0 
 ) => {
-  for ( let i = 0; i < pairs.length; i++ ) {
-    let bitLength = pairs[ i ][ 0 ]
-    const value = valueStrategy( pairs[ i ][ 1 ], bitLength )
+  let uint = 0
 
-    while ( bitLength > 0 ) {
-      const byteIndex = Math.floor( bitOffset / 8 )
-      const bitIndex = bitOffset % 8
-      const sourceMask = ( 1 << ( bitLength - 1 ) )
-      const destMask = ( 1 << ( 7 - bitIndex ) )
-
-      if ( value & sourceMask )
-        bytes[ byteIndex ] |= destMask
-
-      bitOffset++
-      bitLength--
-    }
+  for ( let j = 0; j < bitLength; j++ ) {
+    uint += getBit( bytes, bitOffset + j ) << ( bitLength - j - 1 )
   }
 
-  return bytes
+  return uint
+}
+
+export const setUint = ( 
+  bytes: Uint8Array, bitLength: number, uint: number, bitOffset = 0,
+  valueStrategy: ValueStrategy = modStrategy
+) => {
+  uint = valueStrategy( uint, bitLength )
+
+  while ( bitLength > 0 ) {
+    const byteIndex = Math.floor( bitOffset / 8 )
+    const bitIndex = bitOffset % 8
+    const sourceMask = ( 1 << ( bitLength - 1 ) )
+    const destMask = ( 1 << ( 7 - bitIndex ) )
+
+    if ( uint & sourceMask )
+      bytes[ byteIndex ] |= destMask
+
+    bitOffset++
+    bitLength--
+  }
 }
 
 export const unpack = (
-  data: Uint8Array, bitLengths: number[], bitOffset = 0
+  bytes: Uint8Array, bitLengths: number[], bitOffset = 0
 ) => {
   const { length } = bitLengths
-  const result: number[] = new Array<number>( length )
+  const values: number[] = []
 
-  for ( let i = 0; i < length; i++ ) {
+  for( let i = 0; i < length; i++ ){
     const bitLength = bitLengths[ i ]
 
-    let value = 0
-    for ( let j = 0; j < bitLength; j++ ) {
-      value += getBit( data, bitOffset + j ) << ( bitLength - j - 1 )
-    }
-
-    result[ i ] = value
+    values.push( getUint( bytes, bitLength, bitOffset ) )
+    
     bitOffset += bitLength
   }
-
-  return result
+  
+  return values
 }
 
-export const packSingle = (
-  pair: LengthValuePair,
-  bitOffset = 0,
-  bytes: Uint8Array = new Uint8Array( countBytes( [ pair ] ) ),
+export const pack = (
+  bytes: Uint8Array, pairs: LengthValuePair[], bitOffset = 0,
   valueStrategy: ValueStrategy = modStrategy
-) => pack( [ pair ], bitOffset, bytes, valueStrategy )
+) => {
+  const { length } = pairs
+  
+  for( let i = 0; i < length; i++ ){
+    const [ bitLength, value ] = pairs[ i ]
 
-export const unpackSingle = (
-  data: Uint8Array, bitLength: number, bitOffset = 0
-) =>
-  unpack( data, [ bitLength ], bitOffset )[ 0 ]
+    setUint( bytes, bitLength, value, bitOffset, valueStrategy )
+
+    bitOffset += bitLength
+  }
+}

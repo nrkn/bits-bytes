@@ -1,38 +1,56 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("./util");
-// adapted from http://number-none.com/product/Packing%20Integers/index.html
-exports.pack = (pairs, bitOffset = 0, bytes = new Uint8Array(util_1.countBytes(pairs)), valueStrategy = util_1.modStrategy) => {
-    for (let i = 0; i < pairs.length; i++) {
-        let bitLength = pairs[i][0];
-        const value = valueStrategy(pairs[i][1], bitLength);
-        while (bitLength > 0) {
-            const byteIndex = Math.floor(bitOffset / 8);
-            const bitIndex = bitOffset % 8;
-            const sourceMask = (1 << (bitLength - 1));
-            const destMask = (1 << (7 - bitIndex));
-            if (value & sourceMask)
-                bytes[byteIndex] |= destMask;
-            bitOffset++;
-            bitLength--;
-        }
-    }
-    return bytes;
+exports.getByteBit = (byte, bitOffset) => byte >> (8 - (bitOffset + 1)) & 1;
+exports.setByteBit = (byte, bitOffset, bit) => bit ?
+    byte |= 1 << (7 - bitOffset) :
+    byte &= ~(1 << (7 - bitOffset));
+exports.getBit = (bytes, bitOffset) => {
+    const byteOffset = Math.floor(bitOffset / 8);
+    const byteBitOffset = bitOffset % 8;
+    return exports.getByteBit(bytes[byteOffset], byteBitOffset);
 };
-exports.unpack = (data, bitLengths, bitOffset = 0) => {
+exports.setBit = (bytes, bitOffset, bit) => {
+    const byteOffset = Math.floor(bitOffset / 8);
+    const byteBitOffset = bitOffset % 8;
+    bytes[byteOffset] = exports.setByteBit(bytes[byteOffset], byteBitOffset, bit);
+};
+exports.getUint = (bytes, bitLength, bitOffset = 0) => {
+    let uint = 0;
+    for (let j = 0; j < bitLength; j++) {
+        uint += exports.getBit(bytes, bitOffset + j) << (bitLength - j - 1);
+    }
+    return uint;
+};
+exports.setUint = (bytes, bitLength, uint, bitOffset = 0, valueStrategy = util_1.modStrategy) => {
+    uint = valueStrategy(uint, bitLength);
+    while (bitLength > 0) {
+        const byteIndex = Math.floor(bitOffset / 8);
+        const bitIndex = bitOffset % 8;
+        const sourceMask = (1 << (bitLength - 1));
+        const destMask = (1 << (7 - bitIndex));
+        if (uint & sourceMask)
+            bytes[byteIndex] |= destMask;
+        bitOffset++;
+        bitLength--;
+    }
+};
+exports.unpack = (bytes, bitLengths, bitOffset = 0) => {
     const { length } = bitLengths;
-    const result = new Array(length);
+    const values = [];
     for (let i = 0; i < length; i++) {
         const bitLength = bitLengths[i];
-        let value = 0;
-        for (let j = 0; j < bitLength; j++) {
-            value += util_1.getBit(data, bitOffset + j) << (bitLength - j - 1);
-        }
-        result[i] = value;
+        values.push(exports.getUint(bytes, bitLength, bitOffset));
         bitOffset += bitLength;
     }
-    return result;
+    return values;
 };
-exports.packSingle = (pair, bitOffset = 0, bytes = new Uint8Array(util_1.countBytes([pair])), valueStrategy = util_1.modStrategy) => exports.pack([pair], bitOffset, bytes, valueStrategy);
-exports.unpackSingle = (data, bitLength, bitOffset = 0) => exports.unpack(data, [bitLength], bitOffset)[0];
+exports.pack = (bytes, pairs, bitOffset = 0, valueStrategy = util_1.modStrategy) => {
+    const { length } = pairs;
+    for (let i = 0; i < length; i++) {
+        const [bitLength, value] = pairs[i];
+        exports.setUint(bytes, bitLength, value, bitOffset, valueStrategy);
+        bitOffset += bitLength;
+    }
+};
 //# sourceMappingURL=index.js.map
