@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.countBytes = (pairs) => exports.bitLengthToBytes(exports.countBits(pairs));
-exports.countBits = (pairs) => pairs.reduce((sum, [bitLength]) => sum + bitLength, 0);
+exports.countBytes = (bitLengths) => exports.bitLengthToBytes(exports.countBits(bitLengths));
+exports.countBits = (bitLengths) => bitLengths.reduce((sum, bitLength) => sum + bitLength, 0);
 exports.maxValue = (bitLength) => Math.pow(2, bitLength);
 exports.valueToBitLength = (value) => value === 0 ? 1 : Math.ceil(Math.log(value + 1) / Math.log(2));
 exports.bitLengthToBytes = (bitLength) => Math.ceil(bitLength / 8);

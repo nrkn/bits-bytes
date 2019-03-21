@@ -1,9 +1,11 @@
 import * as assert from 'assert'
 import * as numbers from './fixtures/numbers.json'
 
-import { getBit, setBit, setUint, getUint, unpack, pack } from '..'
+import { 
+  getBit, setBit, setUint, getUint, unpack, pack,
+  clampStrategy, valueToBitLength, maxValue, countBytes, create
+} from '..'
 import { LengthValuePair } from '../types'
-import { clampStrategy, valueToBitLength, maxValue, countBytes } from '../util'
 
 describe( 'bits-bytes', () => {
   it( 'getBit', () => {
@@ -133,19 +135,23 @@ describe( 'bits-bytes', () => {
     })
 
     it( 'use utils to pack and unpack large number of arbitrary values', () => {
-      const pairs = numbers.map( n =>
-        <LengthValuePair>[ valueToBitLength( n ), n ]
-      )
-      const bitLengths = pairs.map( ( [ bitLength ] ) => bitLength )
+      const pairs = new Array<LengthValuePair>( numbers.length )
+      const bitLengths = new Array<number>( numbers.length )
 
-      const byteSize = countBytes( pairs )
+      numbers.forEach( ( number, i ) => {
+        const length = valueToBitLength( number )
+        pairs[ i ] = [ length, number ]
+        bitLengths[ i ] = length
+      })
+
+      const byteSize = countBytes( bitLengths )
       const bytes = new Uint8Array( byteSize )
 
       pack( bytes, pairs )
 
-      const values = unpack( bytes, bitLengths )
+      const uints = unpack( bytes, bitLengths )
 
-      assert.deepEqual( values, numbers )
+      assert.deepEqual( uints, numbers )
     } )
 
     it( 'can use views to marshal between types', () => {
@@ -173,14 +179,10 @@ describe( 'bits-bytes', () => {
         value => <LengthValuePair>[ 32, encodeUint32LE( value ) ]
       )
 
-      const byteSize = countBytes( pairs )
-      const bytes= new Uint8Array( byteSize )
-      
-      pack( bytes, pairs )
-      
-      const unpacked = unpack( bytes, [ 32, 32, 32 ] )
+      const bytes = create( pairs )
+      const uints = unpack( bytes, [ 32, 32, 32 ] )
 
-      const result = unpacked.map( decodeUint32LE )
+      const result = uints.map( decodeUint32LE )
 
       assert.deepEqual( result, values )
     })

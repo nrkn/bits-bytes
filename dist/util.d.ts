@@ -1,5 +1,5 @@
-export declare const countBytes: (pairs: [number, number][]) => number;
-export declare const countBits: (pairs: [number, number][]) => number;
+export declare const countBytes: (bitLengths: number[]) => number;
+export declare const countBits: (bitLengths: number[]) => number;
 export declare const maxValue: (bitLength: number) => number;
 export declare const valueToBitLength: (value: number) => number;
 export declare const bitLengthToBytes: (bitLength: number) => number;

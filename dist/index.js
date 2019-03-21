@@ -1,6 +1,10 @@
 "use strict";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("./util");
+__export(require("./util"));
 exports.getByteBit = (byte, bitOffset) => byte >> (8 - (bitOffset + 1)) & 1;
 exports.setByteBit = (byte, bitOffset, bit) => bit ?
     byte |= 1 << (7 - bitOffset) :
@@ -35,13 +39,13 @@ exports.setUint = (bytes, bitLength, uint, bitOffset = 0, valueStrategy = util_1
 };
 exports.unpack = (bytes, bitLengths, bitOffset = 0) => {
     const { length } = bitLengths;
-    const values = [];
+    const uints = [];
     for (let i = 0; i < length; i++) {
         const bitLength = bitLengths[i];
-        values.push(exports.getUint(bytes, bitLength, bitOffset));
+        uints.push(exports.getUint(bytes, bitLength, bitOffset));
         bitOffset += bitLength;
     }
-    return values;
+    return uints;
 };
 exports.pack = (bytes, pairs, bitOffset = 0, valueStrategy = util_1.modStrategy) => {
     const { length } = pairs;
@@ -50,5 +54,11 @@ exports.pack = (bytes, pairs, bitOffset = 0, valueStrategy = util_1.modStrategy)
         exports.setUint(bytes, bitLength, value, bitOffset, valueStrategy);
         bitOffset += bitLength;
     }
+};
+exports.create = (pairs, bitOffset = 0, valueStrategy = util_1.modStrategy) => {
+    const bitLengths = pairs.map(([bitLength]) => bitLength);
+    const bytes = new Uint8Array(util_1.countBytes(bitLengths));
+    exports.pack(bytes, pairs, bitOffset, valueStrategy);
+    return bytes;
 };
 //# sourceMappingURL=index.js.map

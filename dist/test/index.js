@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const numbers = require("./fixtures/numbers.json");
 const __1 = require("..");
-const util_1 = require("../util");
 describe('bits-bytes', () => {
     it('getBit', () => {
         const bytes = new Uint8Array(10);
@@ -66,39 +65,44 @@ describe('bits-bytes', () => {
         });
         it('uses provided strategy', () => {
             const bytes = new Uint8Array(1);
-            __1.setUint(bytes, 2, 5, 0, util_1.clampStrategy);
+            __1.setUint(bytes, 2, 5, 0, __1.clampStrategy);
             const value = __1.getUint(bytes, 2);
             assert.strictEqual(value, 3);
         });
     });
     describe('util', () => {
         it('valueToBitLength', () => {
-            const a = util_1.valueToBitLength(255);
-            const b = util_1.valueToBitLength(256);
-            const c = util_1.valueToBitLength(0);
+            const a = __1.valueToBitLength(255);
+            const b = __1.valueToBitLength(256);
+            const c = __1.valueToBitLength(0);
             assert.strictEqual(a, 8);
             assert.strictEqual(b, 9);
             assert.strictEqual(c, 1);
         });
         it('clampStrategy', () => {
-            const a = util_1.clampStrategy(-1, 8);
-            const b = util_1.clampStrategy(127, 8);
-            const c = util_1.clampStrategy(256, 8);
+            const a = __1.clampStrategy(-1, 8);
+            const b = __1.clampStrategy(127, 8);
+            const c = __1.clampStrategy(256, 8);
             assert.strictEqual(a, 0);
             assert.strictEqual(b, 127);
             assert.strictEqual(c, 255);
         });
         it('use utils to pack and unpack large number of arbitrary values', () => {
-            const pairs = numbers.map(n => [util_1.valueToBitLength(n), n]);
-            const bitLengths = pairs.map(([bitLength]) => bitLength);
-            const byteSize = util_1.countBytes(pairs);
+            const pairs = new Array(numbers.length);
+            const bitLengths = new Array(numbers.length);
+            numbers.forEach((number, i) => {
+                const length = __1.valueToBitLength(number);
+                pairs[i] = [length, number];
+                bitLengths[i] = length;
+            });
+            const byteSize = __1.countBytes(bitLengths);
             const bytes = new Uint8Array(byteSize);
             __1.pack(bytes, pairs);
-            const values = __1.unpack(bytes, bitLengths);
-            assert.deepEqual(values, numbers);
+            const uints = __1.unpack(bytes, bitLengths);
+            assert.deepEqual(uints, numbers);
         });
         it('can use views to marshal between types', () => {
-            const values = [2306, 11159840, util_1.maxValue(32) - 1];
+            const values = [2306, 11159840, __1.maxValue(32) - 1];
             const encodeUint32LE = (value) => {
                 const buffer = new ArrayBuffer(4);
                 const view = new DataView(buffer);
@@ -112,11 +116,9 @@ describe('bits-bytes', () => {
                 return view.getUint32(0, true);
             };
             const pairs = values.map(value => [32, encodeUint32LE(value)]);
-            const byteSize = util_1.countBytes(pairs);
-            const bytes = new Uint8Array(byteSize);
-            __1.pack(bytes, pairs);
-            const unpacked = __1.unpack(bytes, [32, 32, 32]);
-            const result = unpacked.map(decodeUint32LE);
+            const bytes = __1.create(pairs);
+            const uints = __1.unpack(bytes, [32, 32, 32]);
+            const result = uints.map(decodeUint32LE);
             assert.deepEqual(result, values);
         });
     });

@@ -1,10 +1,8 @@
-import { LengthValuePair } from './types'
+export const countBytes = ( bitLengths: number[] ) =>
+  bitLengthToBytes( countBits( bitLengths ) )
 
-export const countBytes = ( pairs: LengthValuePair[] ) =>
-  bitLengthToBytes( countBits( pairs ) )
-
-export const countBits = ( pairs: LengthValuePair[] ) =>
-  pairs.reduce( ( sum, [ bitLength ] ) => sum + bitLength, 0 )
+export const countBits = ( bitLengths: number[] ) =>
+  bitLengths.reduce( ( sum, bitLength ) => sum + bitLength, 0 )
 
 export const maxValue = ( bitLength: number ) =>
   Math.pow( 2, bitLength )

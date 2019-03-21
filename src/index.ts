@@ -1,5 +1,7 @@
 import { ValueStrategy, LengthValuePair } from './types'
-import { modStrategy } from './util'
+import { modStrategy, countBytes } from './util'
+
+export * from './util'
 
 export const getByteBit = ( byte: number, bitOffset: number ) =>
   byte >> ( 8 - ( bitOffset + 1 ) ) & 1
@@ -9,7 +11,7 @@ export const setByteBit = ( byte: number, bitOffset: number, bit: any ) =>
   byte |= 1 << ( 7 - bitOffset ) :
   byte &= ~( 1 << ( 7 - bitOffset ) )
 
-export const getBit = ( bytes: Uint8Array | number, bitOffset: number ) => {
+export const getBit = ( bytes: Uint8Array, bitOffset: number ) => {
   const byteOffset = Math.floor( bitOffset / 8 )
   
   return getByteBit( bytes[ byteOffset ], bitOffset % 8 )
@@ -57,17 +59,17 @@ export const unpack = (
   bytes: Uint8Array, bitLengths: number[], bitOffset = 0
 ) => {
   const { length } = bitLengths
-  const values: number[] = []
+  const uints: number[] = []
 
   for( let i = 0; i < length; i++ ){
     const bitLength = bitLengths[ i ]
 
-    values.push( getUint( bytes, bitLength, bitOffset ) )
+    uints.push( getUint( bytes, bitLength, bitOffset ) )
     
     bitOffset += bitLength
   }
   
-  return values
+  return uints
 }
 
 export const pack = (
@@ -83,4 +85,16 @@ export const pack = (
 
     bitOffset += bitLength
   }
+}
+
+export const create = (
+  pairs: LengthValuePair[], bitOffset = 0,
+  valueStrategy: ValueStrategy = modStrategy
+) => {
+  const bitLengths = pairs.map( ( [ bitLength ] ) => bitLength )
+  const bytes = new Uint8Array( countBytes( bitLengths ) )
+
+  pack( bytes, pairs, bitOffset, valueStrategy )
+
+  return bytes
 }
