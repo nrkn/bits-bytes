@@ -5,6 +5,10 @@ byte arrays
 
 `npm install bits-bytes`
 
+Although this library supports bit lengths of up to around 32bits, it is 
+primarily intended to make it easier to work with small bit sequences that don't 
+necessarily align to byte fields - otherwise you're better off using DataView
+
 ## core
 
 ### getByteBit
@@ -93,7 +97,7 @@ const { getUint } = require( 'bits-bytes' )
 const bytes = new Uint8Array([ 0b10110001 ])
 
 const first = getUint( bytes, 3 )
-const second = getUint( bytes, 5, 4 )
+const second = getUint( bytes, 5, 3 )
 
 // 5
 console.log( first )
