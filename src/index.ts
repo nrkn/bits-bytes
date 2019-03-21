@@ -11,16 +11,14 @@ export const setByteBit = ( byte: number, bitOffset: number, bit: any ) =>
 
 export const getBit = ( bytes: Uint8Array | number, bitOffset: number ) => {
   const byteOffset = Math.floor( bitOffset / 8 )
-  const byteBitOffset = bitOffset % 8
-
-  return getByteBit( bytes[ byteOffset ], byteBitOffset )
+  
+  return getByteBit( bytes[ byteOffset ], bitOffset % 8 )
 }
 
 export const setBit = ( bytes: Uint8Array, bitOffset: number, bit: any ) => {
   const byteOffset = Math.floor( bitOffset / 8 )
-  const byteBitOffset = bitOffset % 8
 
-  bytes[ byteOffset ] = setByteBit( bytes[ byteOffset ], byteBitOffset, bit )
+  bytes[ byteOffset ] = setByteBit( bytes[ byteOffset ], bitOffset %= 8, bit )
 }
 
 export const getUint = ( 

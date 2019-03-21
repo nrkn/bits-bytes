@@ -7,13 +7,11 @@ exports.setByteBit = (byte, bitOffset, bit) => bit ?
     byte &= ~(1 << (7 - bitOffset));
 exports.getBit = (bytes, bitOffset) => {
     const byteOffset = Math.floor(bitOffset / 8);
-    const byteBitOffset = bitOffset % 8;
-    return exports.getByteBit(bytes[byteOffset], byteBitOffset);
+    return exports.getByteBit(bytes[byteOffset], bitOffset % 8);
 };
 exports.setBit = (bytes, bitOffset, bit) => {
     const byteOffset = Math.floor(bitOffset / 8);
-    const byteBitOffset = bitOffset % 8;
-    bytes[byteOffset] = exports.setByteBit(bytes[byteOffset], byteBitOffset, bit);
+    bytes[byteOffset] = exports.setByteBit(bytes[byteOffset], bitOffset %= 8, bit);
 };
 exports.getUint = (bytes, bitLength, bitOffset = 0) => {
     let uint = 0;
