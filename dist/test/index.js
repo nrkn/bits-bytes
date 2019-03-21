@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
+const numbers = require("./fixtures/numbers.json");
 const __1 = require("..");
 const util_1 = require("../util");
 describe('bits-bytes', () => {
@@ -74,8 +75,10 @@ describe('bits-bytes', () => {
         it('valueToBitLength', () => {
             const a = util_1.valueToBitLength(255);
             const b = util_1.valueToBitLength(256);
+            const c = util_1.valueToBitLength(0);
             assert.strictEqual(a, 8);
             assert.strictEqual(b, 9);
+            assert.strictEqual(c, 1);
         });
         it('clampStrategy', () => {
             const a = util_1.clampStrategy(-1, 8);
@@ -86,12 +89,6 @@ describe('bits-bytes', () => {
             assert.strictEqual(c, 255);
         });
         it('use utils to pack and unpack large number of arbitrary values', () => {
-            const numbers = [];
-            for (let i = 0; i < 1e5; i++) {
-                const numBits = Math.floor(Math.random() * 31) + 1;
-                const value = Math.floor(Math.random() * util_1.maxValue(numBits));
-                numbers.push(value);
-            }
             const pairs = numbers.map(n => [util_1.valueToBitLength(n), n]);
             const bitLengths = pairs.map(([bitLength]) => bitLength);
             const byteSize = util_1.countBytes(pairs);

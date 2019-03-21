@@ -1,4 +1,6 @@
 import * as assert from 'assert'
+import * as numbers from './fixtures/numbers.json'
+
 import { getBit, setBit, setUint, getUint, unpack, pack } from '..'
 import { LengthValuePair } from '../types'
 import { clampStrategy, valueToBitLength, maxValue, countBytes } from '../util'
@@ -110,12 +112,14 @@ describe( 'bits-bytes', () => {
   })
 
   describe( 'util', () => {
-    it( 'valueToBitLength', () => {
+    it( 'valueToBitLength', () => {      
       const a = valueToBitLength( 255 )
       const b = valueToBitLength( 256 )
+      const c = valueToBitLength( 0 )
 
       assert.strictEqual( a, 8 )
       assert.strictEqual( b, 9 )
+      assert.strictEqual( c, 1 )
     })
 
     it( 'clampStrategy', () => {
@@ -129,15 +133,6 @@ describe( 'bits-bytes', () => {
     })
 
     it( 'use utils to pack and unpack large number of arbitrary values', () => {
-      const numbers: number[] = []
-
-      for ( let i = 0; i < 1e5; i++ ) {
-        const numBits = Math.floor( Math.random() * 31 ) + 1
-        const value = Math.floor( Math.random() * maxValue( numBits ) )
-
-        numbers.push( value )
-      }
-
       const pairs = numbers.map( n =>
         <LengthValuePair>[ valueToBitLength( n ), n ]
       )
